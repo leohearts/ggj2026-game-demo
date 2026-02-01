@@ -32,6 +32,7 @@ export const detectEmotion = async (video: HTMLVideoElement | HTMLImageElement |
             // Find the expression with the highest score
             const sorted = Object.entries(expressions).sort((a, b) => b[1] - a[1]);
             const [emotion, score] = sorted[0];
+            console.log(sorted)
 
             return {
                 emotion: emotion as 'happy' | 'sad' | 'angry' | 'neutral' | 'surprised' | 'disgusted' | 'fearful',

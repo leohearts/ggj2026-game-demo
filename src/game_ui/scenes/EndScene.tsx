@@ -7,8 +7,13 @@ import { useGameState } from '../context/GameContext';
 // --- Assets ---
 // Good ending: Liberation - broken mask, true self emerges
 const GOOD_END_BG = "https://images-ng.pixai.art/images/orig/bc82bb89-1198-46df-855b-a3f2fb227099";
+// Neutral ending: Cracks appear - some genuine emotion shown
+const NEUTRAL_END_BG = "https://images-ng.pixai.art/images/orig/bc82bb89-1198-46df-855b-a3f2fb227099";
 // Bad ending: Eternal loop - continues wearing the mask
 const BAD_END_BG = "https://images-ng.pixai.art/images/orig/c2782004-a9ec-4597-ae62-ee6e9c2bf1bf";
+
+// 中等结局对应的情绪
+const NEUTRAL_EMOTIONS = ['fearful', 'disgusted', 'sad', 'surprised'];
 
 // 结局文案
 const ENDINGS = {
@@ -74,6 +79,77 @@ const ENDINGS = {
         text: "— 真 结 局 —",
         delay: 31000,
         style: { fontSize: '3rem', fontWeight: 'bold', color: '#ffeaa7' },
+      },
+    ],
+  },
+  // 中等结局：裂痕出现
+  neutral: {
+    title: "裂痕",
+    scenes: [
+      {
+        text: "晚上，你回到了家。",
+        delay: 0,
+      },
+      {
+        text: "镜子里映出一张有些模糊的脸——",
+        delay: 2000,
+      },
+      {
+        text: "那是「社会的你」，但好像有些不一样。",
+        delay: 4000,
+      },
+      {
+        text: "「今天……你表露了一些情绪。」",
+        speaker: "面具",
+        delay: 6500,
+      },
+      {
+        text: "「我只是……忍不住。」",
+        speaker: "你",
+        delay: 9000,
+      },
+      {
+        text: "面具表面出现了细微的裂痕。",
+        delay: 11500,
+        style: { color: '#fdcb6e' },
+      },
+      {
+        text: "「你知道吗，这样很危险。」",
+        speaker: "面具",
+        delay: 14000,
+      },
+      {
+        text: "「但也……很真实。」",
+        speaker: "面具",
+        delay: 16500,
+        style: { color: '#81ecec' },
+      },
+      {
+        text: "你伸手触碰镜面，",
+        delay: 19000,
+      },
+      {
+        text: "指尖感受到了那道裂痕的温度。",
+        delay: 21500,
+      },
+      {
+        text: "也许……这是一个开始。",
+        delay: 24000,
+        style: { color: '#74b9ff' },
+      },
+      {
+        text: "明天，又是新的一天。",
+        delay: 27000,
+      },
+      {
+        text: "但这次，会有些不一样。",
+        delay: 29500,
+        style: { color: '#a29bfe' },
+      },
+      {
+        text: "— 裂 痕 —",
+        delay: 32000,
+        style: { fontSize: '3rem', fontWeight: 'bold', color: '#a29bfe' },
       },
     ],
   },
@@ -184,15 +260,37 @@ const CHOICE_VARIANTS: Record<string, { intro: string; reflection: string }> = {
   },
 };
 
+// 判断结局类型
+type EndingType = 'good' | 'neutral' | 'bad';
+
+const getEndingType = (brokeMask: boolean, bullyChoice: string | undefined): EndingType => {
+  if (brokeMask || bullyChoice === 'angry') {
+    return 'good';
+  }
+  if (bullyChoice && NEUTRAL_EMOTIONS.includes(bullyChoice)) {
+    return 'neutral';
+  }
+  return 'bad';
+};
+
+const getEndingBg = (endingType: EndingType): string => {
+  switch (endingType) {
+    case 'good': return GOOD_END_BG;
+    case 'neutral': return NEUTRAL_END_BG;
+    case 'bad': return BAD_END_BG;
+  }
+};
+
 export const EndScene: React.FC<SceneProps> = ({ onComplete }) => {
   const { gameState } = useGameState();
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [showEnding, setShowEnding] = useState(false);
 
   // Determine which ending based on player choice
-  const isGoodEnding = gameState.brokeMask || (gameState.bullyChoice && gameState.bullyChoice !== 'submit');
-  const ending = isGoodEnding ? ENDINGS.good : ENDINGS.bad;
+  const endingType = getEndingType(gameState.brokeMask, gameState.bullyChoice || undefined);
+  const ending = ENDINGS[endingType];
   const choiceVariant = CHOICE_VARIANTS[gameState.bullyChoice || 'submit'];
+  const isGoodEnding = endingType === 'good';
 
   // Progress through dialogue
   useEffect(() => {
@@ -220,7 +318,7 @@ export const EndScene: React.FC<SceneProps> = ({ onComplete }) => {
     return () => timers.forEach(t => clearTimeout(t));
   }, [showEnding, ending.scenes]);
 
-  const bgUrl = isGoodEnding ? GOOD_END_BG : BAD_END_BG;
+  const bgUrl = getEndingBg(endingType);
 
   return (
     <motion.div

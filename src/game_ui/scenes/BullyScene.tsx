@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SceneProps } from '../types';
 import { commonStyles } from '../utils/styles';
-import { detectEmotion, loadModels } from '../../services/faceApiService';
+import { analyzeEmotion } from '../../services/llmService';
 import WebcamFeed from '../../components/WebcamFeed';
 import { useGameState } from '../context/GameContext';
 
@@ -10,7 +10,7 @@ import { useGameState } from '../context/GameContext';
 const BULLY_BG_URL = "https://images-ng.pixai.art/images/orig/bc82bb89-1198-46df-855b-a3f2fb227099";
 const BULLY_SPRITE_URL = "https://images-ng.pixai.art/images/orig/c2782004-a9ec-4597-ae62-ee6e9c2bf1bf";
 
-type GameState = 'INTRO' | 'CHOICE' | 'RESULT' | 'OUTRO';
+type SceneStateType = 'INTRO' | 'CHOICE' | 'RESULT' | 'OUTRO';
 
 // Define options for each emotion
 const EMOTION_OPTIONS: Record<string, { label: string, response: string, style?: React.CSSProperties }> = {
@@ -46,26 +46,37 @@ const EMOTION_OPTIONS: Record<string, { label: string, response: string, style?:
 };
 
 export const BullyScene: React.FC<SceneProps> = ({ onComplete }) => {
-  const [sceneState, setSceneState] = useState<GameState>('INTRO');
+  const [sceneState, setSceneState] = useState<SceneStateType>('INTRO');
   const [emotion, setEmotion] = useState<string>('neutral');
   const [dialogue, setDialogue] = useState("喂！说你呢。你以为你很特别吗？");
   const [showWebcam, setShowWebcam] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { setBullyChoice } = useGameState();
+  const lastAnalysisTime = useRef(0);
 
-  // Load models on mount
+  // Show webcam after a delay
   useEffect(() => {
-    loadModels();
     setTimeout(() => setShowWebcam(true), 1000);
   }, []);
 
   const handleFrame = async (base64Image: string) => {
-    const img = new Image();
-    img.src = base64Image;
-    await img.decode();
+    // Throttle LLM calls to avoid rate limiting (max 1 per 2 seconds)
+    const now = Date.now();
+    if (now - lastAnalysisTime.current < 500) return;
 
-    const result = await detectEmotion(img);
-    if (result) {
-      setEmotion(result.emotion);
+    setIsAnalyzing(true);
+    lastAnalysisTime.current = now;
+
+    try {
+      const result = await analyzeEmotion(base64Image);
+      if (result && result.emotion) {
+        setEmotion(result.emotion);
+        console.log(`[LLM Emotion] ${result.emotion} (confidence: ${result.confidence})`);
+      }
+    } catch (e) {
+      console.error("Emotion analysis error:", e);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
