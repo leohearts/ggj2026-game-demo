@@ -1,22 +1,11 @@
-import cv from "@techstark/opencv-js";
+import { getCV } from "./opencvCore";
 
-let isOpenCvReady = false;
 let classifier: any = null;
 
-export const loadOpenCV = async (): Promise<void> => {
-    if (isOpenCvReady) return;
-
-    // Wait for the runtime to be initialized
-    return new Promise((resolve) => {
-        (cv as any).onRuntimeInitialized = () => {
-            console.log("OpenCV Ready");
-            isOpenCvReady = true;
-            loadHaarCascade().then(resolve);
-        };
-    });
-};
-
 const loadHaarCascade = async () => {
+    const cv = getCV();
+    if (!cv) return;
+
     try {
         const response = await fetch('/models/haarcascade_frontalface_default.xml');
         if (!response.ok) throw new Error("Failed to load Haar Cascade");
@@ -33,9 +22,17 @@ const loadHaarCascade = async () => {
     }
 }
 
+export const ensureFaceClassifierLoaded = async () => {
+    if (!classifier) {
+        await loadHaarCascade();
+    }
+}
+
 export const detectAndCropFace = async (base64Image: string): Promise<string | null> => {
-    if (!isOpenCvReady || !classifier) {
-        console.warn("OpenCV not ready yet");
+    const cv = getCV();
+    if (!cv || !classifier) {
+        console.warn("OpenCV or Classifier not ready yet");
+        // Try to load capability if missing?
         return null;
     }
 
@@ -58,15 +55,6 @@ export const detectAndCropFace = async (base64Image: string): Promise<string | n
                 if (faces.size() > 0) {
                     // Get the first face
                     const face = faces.get(0);
-
-                    // Add some padding if possible
-                    // const padding = 20;
-                    // const x = Math.max(0, face.x - padding);
-                    // const y = Math.max(0, face.y - padding);
-                    // const w = Math.min(src.cols - x, face.width + padding * 2);
-                    // const h = Math.min(src.rows - y, face.height + padding * 2);
-                    // const roiRect = new cv.Rect(x, y, w, h);
-
                     const roi = src.roi(face);
 
                     const dst = new cv.Mat();

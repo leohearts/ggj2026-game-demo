@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import Webcam from 'react-webcam';
 import { SceneProps } from '../types';
 import { commonStyles } from '../utils/styles';
+import { loadOpenCV, getCV } from '../../services/opencvCore';
+import { calculateMotionCentroid } from '../../services/motionDetectionService';
 
 // --- Assets ---
 const MIRROR_BG_URL = "https://placehold.co/1280x768/81ecec/ffffff?text=Bathroom+Mirror";
@@ -17,6 +20,73 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
   const [brushX, setBrushX] = useState(0);
   const lastX = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Webcam & Motion Refs
+  const webcamRef = useRef<Webcam>(null);
+  const debugCanvasRef = useRef<HTMLCanvasElement>(null);
+  const previousFrameRef = useRef<any>(null);
+  const requestRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    // Initialize OpenCV
+    loadOpenCV().then(() => {
+      const cv = getCV();
+      if (cv) {
+        previousFrameRef.current = new cv.Mat();
+        // Start processing loop
+        processVideo();
+      }
+    });
+
+    return () => {
+      const cv = getCV();
+      if (cv && previousFrameRef.current && !previousFrameRef.current.isDeleted()) {
+        previousFrameRef.current.delete();
+      }
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, []);
+
+  const processVideo = () => {
+    if (webcamRef.current && webcamRef.current.video && webcamRef.current.video.readyState === 4) {
+      const cv = getCV();
+      if (cv && previousFrameRef.current) {
+        const video = webcamRef.current.video;
+        // We need to make sure the canvas has an ID for OpenCV if we pass the ID, 
+        // or just pass the ID string if we set it. 
+        // Let's rely on the ID "motion-debug-canvas" which we will set in the JSX.
+
+        const centroidX = calculateMotionCentroid(video, previousFrameRef.current, "motion-debug-canvas");
+
+        if (centroidX !== null) {
+          const width = video.videoWidth;
+          // Map centroid (0..width) to range (-1..1)
+          // Flip direction: moving left (small x) should equate to brush left (small/negative x)
+
+          const normalizedX = (centroidX / width) - 0.5;
+          // Scale it up. -0.5 to 0.5 -> -300 to 300 (Increased range for better coverage)
+          const targetX = -4 * (normalizedX * 600 + 225);
+          console.log(targetX)
+          // Update brush
+          const clampedX = Math.max(-200, Math.min(200, targetX));
+
+          // Smooth the movement slightly
+          setBrushX(prev => {
+            return prev + (clampedX - prev);
+          });
+
+          // Calc delta from last frame's position for progress
+          // logic similar to handleMove, but using the calculated clampedX
+          const delta = Math.abs(clampedX - lastX.current);
+          if (delta > 5) {
+            setProgress(p => Math.min(100, p + 0.5));
+          }
+          lastX.current = clampedX;
+        }
+      }
+    }
+    requestRef.current = requestAnimationFrame(processVideo);
+  };
 
   const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
@@ -59,6 +129,65 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
     >
       <h2 style={{ marginBottom: 40, opacity: 0.6, color: '#2d3436' }}>Brush Teeth</h2>
 
+      {/* Hidden Webcam for Motion Detection */}
+      {/* Debug Webcam & Motion Overlay */}
+      <div style={{
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        width: 160,
+        height: 120,
+        border: '2px solid red',
+        zIndex: 100,
+        backgroundColor: 'black'
+      }}>
+        <Webcam
+          ref={webcamRef}
+          width={160}
+          height={120}
+          mirrored
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        {/* Motion Mask Canvas */}
+        <canvas
+          id="motion-debug-canvas"
+          ref={debugCanvasRef}
+          width={160}
+          height={120}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            opacity: 0.5, // Overlay semi-transparently
+            pointerEvents: 'none',
+            transform: 'scaleX(-1)'
+          }}
+        />
+        {/* Centroid Marker */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: `${((brushX + 200) / 400) * 100}%`, // Map -200..200 back to 0..100%
+          width: 2,
+          backgroundColor: 'lime',
+          transition: 'left 0.1s linear'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: 2,
+          left: 2,
+          color: 'lime',
+          fontSize: 10,
+          fontWeight: 'bold',
+          textShadow: '1px 1px 0 #000'
+        }}>
+          Debug View
+        </div>
+      </div>
+
       {/* The "Teeth" (Background) */}
       <div style={styles.teethContainer}>
         {/* Simple visual representation of dirty teeth getting clean */}
@@ -68,7 +197,7 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
         }} />
       </div>
 
-      {/* The Brush (Follows Mouse) */}
+      {/* The Brush (Follows Mouse or Motion) */}
       <motion.div
         style={{
           ...styles.toothbrushWrapper,
@@ -82,7 +211,7 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
         <div style={styles.handle} />
       </motion.div>
 
-      <p style={{ marginTop: 40, opacity: 0.5, color: '#2d3436' }}>Scrub back and forth</p>
+      <p style={{ marginTop: 40, opacity: 0.5, color: '#2d3436' }}>Scrub back and forth (Mouse or Shake Hand)</p>
     </motion.div>
   );
 };
