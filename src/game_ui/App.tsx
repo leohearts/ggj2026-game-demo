@@ -1,40 +1,88 @@
 import { useState } from 'react';
+import './styles.css';
 import { AnimatePresence } from 'framer-motion';
 import { StartScene } from './scenes/StartScene';
-import { WakeUpScene } from './scenes/WakeUpScene';
-import { BrushTeethScene } from './scenes/BrushTeethScene';
-import { EndScene } from './scenes/EndScene';
+import { ChapterTransition } from './components/ChapterTransition';
+import { CHAPTERS } from './data/chapters';
 
-// --- Types ---
-type SceneId = 'START' | 'WAKE_UP' | 'BRUSH_TEETH' | 'END';
+// --- Main App ---
 
-// --- Main App Component (The Director) ---
 export default function App() {
-  const [currentScene, setCurrentScene] = useState<SceneId>('START');
+  const [gameStarted, setGameStarted] = useState(false);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
+  const [showTransition, setShowTransition] = useState(false);
 
-  // Simple state machine for scene flow
-  const handleNext = () => {
-    if (currentScene === 'START') setCurrentScene('WAKE_UP');
-    else if (currentScene === 'WAKE_UP') setCurrentScene('BRUSH_TEETH');
-    else if (currentScene === 'BRUSH_TEETH') setCurrentScene('END');
-    else if (currentScene === 'END') setCurrentScene('START');
+  // Start the game
+  const handleStartGame = () => {
+    setGameStarted(true);
+    setShowTransition(true); // Show first chapter title
+    setCurrentChapterIndex(0);
+    setCurrentSceneIndex(0);
+  };
+
+  // Called when a scene finishes
+  const handleSceneComplete = () => {
+    const currentChapter = CHAPTERS[currentChapterIndex];
+    
+    // Check if there are more scenes in this chapter
+    if (currentSceneIndex < currentChapter.scenes.length - 1) {
+      setCurrentSceneIndex(currentSceneIndex + 1);
+    } else {
+      // Chapter finished
+      if (currentChapterIndex < CHAPTERS.length - 1) {
+        // Prepare next chapter
+        setCurrentChapterIndex(currentChapterIndex + 1);
+        setCurrentSceneIndex(0);
+        setShowTransition(true);
+      } else {
+        // Game Over (Back to start for now)
+        setGameStarted(false);
+      }
+    }
+  };
+
+  // Called when chapter transition finishes
+  const handleTransitionComplete = () => {
+    setShowTransition(false);
+  };
+
+  // Render Logic
+  const renderContent = () => {
+    if (!gameStarted) {
+      return <StartScene onComplete={handleStartGame} />;
+    }
+
+    if (showTransition) {
+      const previousChapters = CHAPTERS
+        .slice(0, currentChapterIndex)
+        .map(c => c.title);
+        
+      return (
+        <ChapterTransition
+          key={`transition-${currentChapterIndex}`}
+          chapterNumber={currentChapterIndex + 1}
+          title={CHAPTERS[currentChapterIndex].title}
+          previousChapters={previousChapters}
+          onComplete={handleTransitionComplete}
+        />
+      );
+    }
+
+    // Render Current Scene
+    const CurrentSceneComponent = CHAPTERS[currentChapterIndex].scenes[currentSceneIndex];
+    return (
+      <CurrentSceneComponent 
+        key={`scene-${currentChapterIndex}-${currentSceneIndex}`}
+        onComplete={handleSceneComplete} 
+      />
+    );
   };
 
   return (
     <div className="game-frame">
       <AnimatePresence mode="wait">
-        {currentScene === 'START' && (
-          <StartScene key="start" onComplete={handleNext} />
-        )}
-        {currentScene === 'WAKE_UP' && (
-          <WakeUpScene key="wake" onComplete={handleNext} />
-        )}
-        {currentScene === 'BRUSH_TEETH' && (
-          <BrushTeethScene key="brush" onComplete={handleNext} />
-        )}
-        {currentScene === 'END' && (
-          <EndScene key="end" onComplete={handleNext} />
-        )}
+        {renderContent()}
       </AnimatePresence>
     </div>
   );

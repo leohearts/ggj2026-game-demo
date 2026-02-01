@@ -4,11 +4,11 @@ import { SceneProps } from '../types';
 import { commonStyles } from '../utils/styles';
 
 // --- Assets ---
-const MIRROR_BG_URL = "https://placehold.co/1280x768/81ecec/ffffff?text=Bathroom+Mirror";
+const MIRROR_BG_URL = "https://images-ng.pixai.art/gi/orig/96c7db1a-1063-401c-82c9-4633df068b5e";
 // Requirement: 1280x768
 // Prompt: "Bathroom mirror reflection, clean white tiles, morning light, illustration style, Florence game art style, hand-drawn, pastel colors"
 
-// const TOOTHBRUSH_SPRITE_URL = "https://placehold.co/100x300/0984e3/ffffff?text=Brush";
+const TOOTHBRUSH_SPRITE_URL = "https://images-ng.pixai.art/images/orig/5e095098-4b1c-4f9c-8174-22e288db65a0";
 // Requirement: 100x300, transparent background
 // Prompt: "Blue toothbrush, top down view, vector illustration, transparent background, Florence game art style, flat design, hand-drawn"
 
@@ -20,7 +20,7 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
 
   const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
-
+    
     // Calculate relative X (-1 to 1)
     const rect = containerRef.current.getBoundingClientRect();
     const relativeX = (clientX - rect.left) - (rect.width / 2);
@@ -31,7 +31,7 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
     // Detect "scrubbing" motion
     const delta = Math.abs(relativeX - lastX.current);
     if (delta > 5) { // Threshold to ignore jitter
-      setProgress(p => Math.min(100, p + 0.5));
+       setProgress(p => Math.min(100, p + 0.5));
     }
     lastX.current = relativeX;
   };
@@ -49,27 +49,29 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={{
-        ...commonStyles.sceneContainer,
+        ...commonStyles.sceneContainer, 
         backgroundImage: `url(${MIRROR_BG_URL})`,
         backgroundSize: 'cover',
       }}
       ref={containerRef}
       onMouseMove={(e) => handleMove(e.clientX)}
-      onTouchMove={(e) => handleMove(e.touches[0].clientX)}
+      onTouchMove={(e) => {
+        if (e.touches[0]) handleMove(e.touches[0].clientX);
+      }}
     >
-      <h2 style={{ marginBottom: 40, opacity: 0.6, color: '#2d3436' }}>Brush Teeth</h2>
+      <h2 style={{marginBottom: 40, opacity: 0.6, color: '#2d3436'}}>Brush Teeth</h2>
 
       {/* The "Teeth" (Background) */}
       <div style={styles.teethContainer}>
-        {/* Simple visual representation of dirty teeth getting clean */}
-        <div style={{
-          ...styles.teethOverlay,
-          opacity: 1 - (progress / 100)
-        }} />
+         {/* Simple visual representation of dirty teeth getting clean */}
+         <div style={{
+           ...styles.teethOverlay, 
+           opacity: 1 - (progress / 100)
+         }} />
       </div>
 
       {/* The Brush (Follows Mouse) */}
-      <motion.div
+      <motion.div 
         style={{
           ...styles.toothbrushWrapper,
           x: brushX
@@ -77,12 +79,18 @@ export const BrushTeethScene: React.FC<SceneProps> = ({ onComplete }) => {
         animate={{ x: brushX }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       >
-        {/* Using CSS shapes for now, but ready for image replacement */}
-        <div style={styles.bristles} />
-        <div style={styles.handle} />
+        <img 
+          src={TOOTHBRUSH_SPRITE_URL} 
+          alt="Toothbrush" 
+          style={{
+            width: 100, // Scaled down from 1280px width
+            height: 'auto',
+            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))'
+          }} 
+        />
       </motion.div>
 
-      <p style={{ marginTop: 40, opacity: 0.5, color: '#2d3436' }}>Scrub back and forth</p>
+      <p style={{marginTop: 40, opacity: 0.5, color: '#2d3436'}}>Scrub back and forth</p>
     </motion.div>
   );
 };
@@ -110,17 +118,5 @@ const styles = {
     flexDirection: 'column' as const,
     alignItems: 'center',
     pointerEvents: 'none' as const, // Let clicks pass through
-  },
-  bristles: {
-    width: 80,
-    height: 25,
-    backgroundColor: '#74b9ff',
-    borderRadius: '4px 4px 0 0',
-  },
-  handle: {
-    width: 20,
-    height: 120,
-    backgroundColor: '#0984e3',
-    borderRadius: '0 0 10px 10px',
   },
 };
