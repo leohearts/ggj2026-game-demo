@@ -7,7 +7,7 @@ import { CHAPTERS } from '../data/chapters';
 // --- Assets ---
 const BG_IMAGE_URL = "https://images-ng.pixai.art/images/orig/fd8992d1-c7a8-40ec-b564-bcd89a5e29d3";
 
-export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
+export const StartScene: React.FC<SceneProps & { onChapterSelect?: (index: number) => void }> = ({ onComplete, onChapterSelect }) => {
   const [showChapters, setShowChapters] = useState(false);
   // In a real app, this would be persisted state
   const unlockedIndex = 0;
@@ -17,7 +17,9 @@ export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
   };
 
   const handleChapterSelect = (index: number) => {
-    if (index <= unlockedIndex) {
+    if (onChapterSelect) {
+      onChapterSelect(index);
+    } else if (index <= unlockedIndex) {
       onComplete();
     }
   };
@@ -96,7 +98,7 @@ export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
                   transition={{ delay: 0.5 + (index * 0.1) }}
                   style={{
                     ...styles.chapterCard,
-                    cursor: isLocked ? 'default' : 'pointer',
+                    cursor: 'pointer', // Always pointer to indicate clickable
                   }}
                   onClick={() => handleChapterSelect(index)}
                   whileHover={!isLocked ? {
