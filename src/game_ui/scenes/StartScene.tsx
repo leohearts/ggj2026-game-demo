@@ -10,7 +10,7 @@ const BG_IMAGE_URL = "https://images-ng.pixai.art/images/orig/fd8992d1-c7a8-40ec
 export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
   const [showChapters, setShowChapters] = useState(false);
   // In a real app, this would be persisted state
-  const unlockedIndex = 0; 
+  const unlockedIndex = 0;
 
   const handleStart = () => {
     setShowChapters(true);
@@ -40,25 +40,25 @@ export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
       {/* Title Section */}
       <motion.div
         layout
-        style={{ 
+        style={{
           textAlign: 'center',
           marginBottom: showChapters ? 30 : 0,
           zIndex: 10
         }}
       >
-        <h1 style={{ 
-          fontSize: '3rem', 
-          color: '#fff', 
+        <h1 style={{
+          fontSize: '3rem',
+          color: '#fff',
           marginBottom: 10,
           textShadow: '0 2px 10px rgba(0,0,0,0.3)',
           fontFamily: '"Helvetica Neue", sans-serif',
           fontWeight: 300
         }}>
-          Florence Clone
+          Untitled game
         </h1>
-        
+
         {!showChapters && (
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 1 }}
@@ -83,13 +83,13 @@ export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
             {CHAPTERS.map((chapter, index) => {
               const isLocked = index > unlockedIndex;
               const isCurrent = index === unlockedIndex;
-              
+
               return (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ 
-                    opacity: isLocked ? 0.5 : 1, 
+                  animate={{
+                    opacity: isLocked ? 0.5 : 1,
                     scale: 1,
                     filter: isLocked ? 'grayscale(100%)' : 'none'
                   }}
@@ -99,10 +99,10 @@ export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
                     cursor: isLocked ? 'default' : 'pointer',
                   }}
                   onClick={() => handleChapterSelect(index)}
-                  whileHover={!isLocked ? { 
-                    scale: 1.05, 
+                  whileHover={!isLocked ? {
+                    scale: 1.05,
                     y: -5,
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)' 
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
                   } : {}}
                   whileTap={!isLocked ? { scale: 0.95 } : {}}
                 >
@@ -115,7 +115,7 @@ export const StartScene: React.FC<SceneProps> = ({ onComplete }) => {
                       <div style={styles.lockIcon}>🔒</div>
                     )}
                     {isCurrent && (
-                      <motion.div 
+                      <motion.div
                         style={styles.playIcon}
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ repeat: Infinity, duration: 2 }}
