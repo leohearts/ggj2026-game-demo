@@ -264,10 +264,10 @@ const CHOICE_VARIANTS: Record<string, { intro: string; reflection: string }> = {
 type EndingType = 'good' | 'neutral' | 'bad';
 
 const getEndingType = (brokeMask: boolean, bullyChoice: string | undefined): EndingType => {
-  if (brokeMask || bullyChoice === 'angry') {
+  if (bullyChoice === 'angry') {
     return 'good';
   }
-  if (bullyChoice && NEUTRAL_EMOTIONS.includes(bullyChoice)) {
+  if (bullyChoice != null && NEUTRAL_EMOTIONS.includes(bullyChoice)) {
     return 'neutral';
   }
   return 'bad';
@@ -288,6 +288,7 @@ export const EndScene: React.FC<SceneProps> = ({ onComplete }) => {
 
   // Determine which ending based on player choice
   const endingType = getEndingType(gameState.brokeMask, gameState.bullyChoice || undefined);
+  console.log(endingType);
   const ending = ENDINGS[endingType];
   const choiceVariant = CHOICE_VARIANTS[gameState.bullyChoice || 'submit'];
   const isGoodEnding = endingType === 'good';
