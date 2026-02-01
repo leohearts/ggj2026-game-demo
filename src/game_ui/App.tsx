@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { StartScene } from './scenes/StartScene';
 import { ChapterTransition } from './components/ChapterTransition';
 import { CHAPTERS } from './data/chapters';
+import { GameProvider } from './context/GameContext';
 
 // --- Main App ---
 
@@ -24,7 +25,7 @@ export default function App() {
   // Called when a scene finishes
   const handleSceneComplete = () => {
     const currentChapter = CHAPTERS[currentChapterIndex];
-    
+
     // Check if there are more scenes in this chapter
     if (currentSceneIndex < currentChapter.scenes.length - 1) {
       setCurrentSceneIndex(currentSceneIndex + 1);
@@ -57,7 +58,7 @@ export default function App() {
       const previousChapters = CHAPTERS
         .slice(0, currentChapterIndex)
         .map(c => c.title);
-        
+
       return (
         <ChapterTransition
           key={`transition-${currentChapterIndex}`}
@@ -72,18 +73,20 @@ export default function App() {
     // Render Current Scene
     const CurrentSceneComponent = CHAPTERS[currentChapterIndex].scenes[currentSceneIndex];
     return (
-      <CurrentSceneComponent 
+      <CurrentSceneComponent
         key={`scene-${currentChapterIndex}-${currentSceneIndex}`}
-        onComplete={handleSceneComplete} 
+        onComplete={handleSceneComplete}
       />
     );
   };
 
   return (
-    <div className="game-frame">
-      <AnimatePresence mode="wait">
-        {renderContent()}
-      </AnimatePresence>
-    </div>
+    <GameProvider>
+      <div className="game-frame">
+        <AnimatePresence mode="wait">
+          {renderContent()}
+        </AnimatePresence>
+      </div>
+    </GameProvider>
   );
 }
