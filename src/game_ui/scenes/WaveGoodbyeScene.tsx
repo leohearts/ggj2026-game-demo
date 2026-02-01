@@ -70,7 +70,7 @@ export const WaveGoodbyeScene: React.FC<SceneProps> = ({ onComplete }) => {
           // Scale to scene range (-150 to 150)
           // Positive normalizedX (Right) -> Positive handX (Right) for Mirror effect
           // Scale factor 800 derived from tuning in BrushTeethScene
-          const targetX = normalizedX * 800;
+          const targetX = -1 * (normalizedX * 800 + 300);
           console.log(targetX)
 
           const clampedX = Math.max(-150, Math.min(150, targetX));
