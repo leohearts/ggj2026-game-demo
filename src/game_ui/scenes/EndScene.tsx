@@ -10,7 +10,7 @@ const GOOD_END_BG = "https://images-ng.pixai.art/images/orig/bc82bb89-1198-46df-
 // Neutral ending: Cracks appear - some genuine emotion shown
 const NEUTRAL_END_BG = "https://images-ng.pixai.art/images/orig/bc82bb89-1198-46df-855b-a3f2fb227099";
 // Bad ending: Eternal loop - continues wearing the mask
-const BAD_END_BG = "https://images-ng.pixai.art/images/orig/c2782004-a9ec-4597-ae62-ee6e9c2bf1bf";
+const BAD_END_BG = "https://images-ng.pixai.art/images/orig/62b887ee-1fbf-4e25-ac45-3a3eeb422746";
 
 // 中等结局对应的情绪
 const NEUTRAL_EMOTIONS = ['fearful', 'disgusted', 'sad', 'surprised'];
