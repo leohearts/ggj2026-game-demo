@@ -8,7 +8,7 @@ import { useGameState } from '../context/GameContext';
 
 // --- Assets ---
 const BULLY_BG_URL = "https://images-ng.pixai.art/images/orig/bc82bb89-1198-46df-855b-a3f2fb227099";
-const BULLY_SPRITE_URL = "https://images-ng.pixai.art/images/orig/c2782004-a9ec-4597-ae62-ee6e9c2bf1bf";
+const BULLY_SPRITE_URL = "https://images-ng.pixai.art/images/orig/62b887ee-1fbf-4e25-ac45-3a3eeb422746";
 
 type SceneStateType = 'INTRO' | 'CHOICE' | 'RESULT' | 'OUTRO';
 
