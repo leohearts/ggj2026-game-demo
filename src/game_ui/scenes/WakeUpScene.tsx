@@ -11,7 +11,7 @@ const CLOCK_BG_URL = "https://images-ng.pixai.art/images/orig/df1368b2-fada-4e6d
 
 export const WakeUpScene: React.FC<SceneProps> = ({ onComplete }) => {
   const [clarity, setClarity] = useState(0); // 0 to 100
-  
+
   // Webcam & Motion Refs
   const webcamRef = useRef<Webcam>(null);
   const debugCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,20 +49,20 @@ export const WakeUpScene: React.FC<SceneProps> = ({ onComplete }) => {
       const cv = getCV();
       if (cv && previousFrameRef.current) {
         const video = webcamRef.current.video;
-        
+
         // Use unique ID or reuse concept
         const centroidX = calculateMotionCentroid(video, previousFrameRef.current, "wakeup-debug-canvas");
 
         if (centroidX !== null) {
           const currentX = centroidX;
-          
+
           if (lastX.current !== null) {
             const delta = currentX - lastX.current;
             const threshold = 5; // Movement threshold
-            
+
             if (Math.abs(delta) > threshold) {
               const currentDirection = delta > 0 ? 'right' : 'left';
-              
+
               // Check for direction reversal (wave/shake)
               if (lastDirection.current && lastDirection.current !== currentDirection) {
                 const now = Date.now();
@@ -70,7 +70,7 @@ export const WakeUpScene: React.FC<SceneProps> = ({ onComplete }) => {
                 if (now - lastShakeTime.current > 200) {
                   shakeCount.current += 1;
                   lastShakeTime.current = now;
-                  
+
                   // Increase clarity
                   setClarity(prev => {
                     const newVal = prev + 15;
@@ -82,11 +82,11 @@ export const WakeUpScene: React.FC<SceneProps> = ({ onComplete }) => {
                   });
                 }
               }
-              
+
               lastDirection.current = currentDirection;
             }
           }
-          
+
           lastX.current = currentX;
         }
       }
@@ -163,21 +163,21 @@ export const WakeUpScene: React.FC<SceneProps> = ({ onComplete }) => {
           fontWeight: 'bold',
           textShadow: '1px 1px 0 #000'
         }}>
-          Debug View
+          调试
         </div>
       </div>
 
-      <div style={{...commonStyles.centerContent, filter: `blur(${blurAmount}px)`}}>
+      <div style={{ ...commonStyles.centerContent, filter: `blur(${blurAmount}px)` }}>
         <div style={styles.clockFace}>7:00</div>
-        <p style={{marginTop: 20, color: '#5d4037', fontSize: '1.5rem', fontWeight: 'bold'}}>
-          Wave your hand to wake up!
+        <p style={{ marginTop: 20, color: '#5d4037', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          晃晃头，起床啦！
         </p>
       </div>
-      
+
       {/* Progress Indicator */}
       <div style={styles.progressBarWrapper}>
-        <motion.div 
-          style={styles.progressBar} 
+        <motion.div
+          style={styles.progressBar}
           animate={{ width: `${clarity}%` }}
         />
       </div>

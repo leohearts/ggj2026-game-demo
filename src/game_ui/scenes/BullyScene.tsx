@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SceneProps } from '../types';
 import { commonStyles } from '../utils/styles';
 import { analyzeEmotion } from '../../services/llmService';
+import { detectEmotion, loadModels } from '../../services/faceApiService';
 import WebcamFeed from '../../components/WebcamFeed';
 import { useGameState } from '../context/GameContext';
 
@@ -59,6 +60,11 @@ export const BullyScene: React.FC<SceneProps> = ({ onComplete }) => {
     setTimeout(() => setShowWebcam(true), 1000);
   }, []);
 
+  // Load FaceAPI models on mount
+  useEffect(() => {
+    loadModels();
+  }, []);
+
   const handleFrame = async (base64Image: string) => {
     // Throttle LLM calls to avoid rate limiting (max 1 per 2 seconds)
     const now = Date.now();
@@ -68,13 +74,32 @@ export const BullyScene: React.FC<SceneProps> = ({ onComplete }) => {
     lastAnalysisTime.current = now;
 
     try {
+      // 1. Try LLM first
       const result = await analyzeEmotion(base64Image);
       if (result && result.emotion) {
         setEmotion(result.emotion);
         console.log(`[LLM Emotion] ${result.emotion} (confidence: ${result.confidence})`);
       }
     } catch (e) {
-      console.error("Emotion analysis error:", e);
+      console.warn("LLM Emotion analysis error, falling back to FaceAPI", e);
+
+      // 2. Fallback to FaceAPI
+      try {
+        const img = new Image();
+        img.src = base64Image;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+
+        const faceResult = await detectEmotion(img);
+        if (faceResult && faceResult.emotion) {
+          setEmotion(faceResult.emotion);
+          console.log(`[FaceAPI Emotion] ${faceResult.emotion} (confidence: ${faceResult.confidence})`);
+        }
+      } catch (fallbackError) {
+        console.error("Fallback FaceAPI error:", fallbackError);
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -129,7 +154,7 @@ export const BullyScene: React.FC<SceneProps> = ({ onComplete }) => {
         <div style={{ position: 'absolute', top: 20, right: 20, width: 150, opacity: 0.7, borderRadius: 10, overflow: 'hidden' }}>
           <WebcamFeed onFrameCapture={handleFrame} interval={500} showFeed={true} />
           <div style={{ background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: 10, padding: 2, textAlign: 'center' }}>
-            Detected: {emotion}
+            当前表情：{emotion}
           </div>
         </div>
       )}

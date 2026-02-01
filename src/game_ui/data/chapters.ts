@@ -7,19 +7,19 @@ import { EndScene } from '../scenes/EndScene';
 
 export const CHAPTERS: Chapter[] = [
   {
-    title: "Morning Routine",
+    title: "早晨的日常",
     scenes: [WakeUpScene, BrushTeethScene]
   },
   {
-    title: "Departure",
+    title: "出门",
     scenes: [WaveGoodbyeScene]
   },
   {
-    title: "Confrontation",
+    title: "冲突",
     scenes: [BullyScene]
   },
   {
-    title: "The End",
+    title: "结局",
     scenes: [EndScene]
   }
 ];

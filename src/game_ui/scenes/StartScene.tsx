@@ -56,7 +56,7 @@ export const StartScene: React.FC<SceneProps & { onChapterSelect?: (index: numbe
           fontFamily: '"Helvetica Neue", sans-serif',
           fontWeight: 300
         }}>
-          Untitled game
+          我的脸没有自己的想法
         </h1>
 
         {!showChapters && (
@@ -68,7 +68,7 @@ export const StartScene: React.FC<SceneProps & { onChapterSelect?: (index: numbe
             onClick={handleStart}
             whileHover={{ scale: 1.1 }}
           >
-            ( Tap to start )
+            （点击开始）
           </motion.p>
         )}
       </motion.div>
@@ -129,7 +129,7 @@ export const StartScene: React.FC<SceneProps & { onChapterSelect?: (index: numbe
 
                   {/* Chapter Info */}
                   <div style={styles.cardContent}>
-                    <div style={styles.chapterNumber}>Chapter {index + 1}</div>
+                    <div style={styles.chapterNumber}>第 {index + 1} 章</div>
                     <div style={styles.chapterTitle}>{chapter.title}</div>
                   </div>
                 </motion.div>

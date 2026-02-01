@@ -149,7 +149,7 @@ export const WaveGoodbyeScene: React.FC<SceneProps> = ({ onComplete }) => {
         if (e.touches[0]) handleMove(e.touches[0].clientX);
       }}
     >
-      <h2 style={{ marginBottom: 40, opacity: 0.6, color: '#2d3436' }}>Say Goodbye</h2>
+      <h2 style={{ marginBottom: 40, opacity: 0.6, color: '#2d3436' }}>道别</h2>
 
       {/* Debug Webcam & Motion Overlay */}
       <div style={{
@@ -206,7 +206,7 @@ export const WaveGoodbyeScene: React.FC<SceneProps> = ({ onComplete }) => {
           fontWeight: 'bold',
           textShadow: '1px 1px 0 #000'
         }}>
-          Debug View
+          调试
         </div>
       </div>
 
@@ -214,7 +214,7 @@ export const WaveGoodbyeScene: React.FC<SceneProps> = ({ onComplete }) => {
       <div style={styles.personContainer}>
         <img
           src={PERSON_SPRITE_URL}
-          alt="Partner"
+          alt="伴侣"
           style={{
             width: 300, // Scaled down from 768px
             height: 'auto',
@@ -230,7 +230,7 @@ export const WaveGoodbyeScene: React.FC<SceneProps> = ({ onComplete }) => {
         transition={{ delay: 0.5 }}
         style={styles.dialogueBubble}
       >
-        "Have a nice day."
+        "今天也要加油哦。"
       </motion.div>
 
       {/* The Player's Hand */}
@@ -256,7 +256,7 @@ export const WaveGoodbyeScene: React.FC<SceneProps> = ({ onComplete }) => {
         color: '#2d3436',
         transition: 'opacity 0.5s'
       }}>
-        Wave your hand
+        挥一挥手吧
       </p>
     </motion.div>
   );
