@@ -2,7 +2,7 @@ import { Chapter } from '../types';
 import { WakeUpScene } from '../scenes/WakeUpScene';
 import { BrushTeethScene } from '../scenes/BrushTeethScene';
 import { WaveGoodbyeScene } from '../scenes/WaveGoodbyeScene';
-import { QuarrelScene } from '../scenes/QuarrelScene';
+import { BullyScene } from '../scenes/BullyScene';
 import { EndScene } from '../scenes/EndScene';
 
 export const CHAPTERS: Chapter[] = [
@@ -15,8 +15,8 @@ export const CHAPTERS: Chapter[] = [
     scenes: [WaveGoodbyeScene]
   },
   {
-    title: "Conflict",
-    scenes: [QuarrelScene]
+    title: "Confrontation",
+    scenes: [BullyScene]
   },
   {
     title: "The End",

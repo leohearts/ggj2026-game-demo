@@ -14,10 +14,10 @@ export default function App() {
   const [showTransition, setShowTransition] = useState(false);
 
   // Start the game
-  const handleStartGame = () => {
+  const handleStartGame = (chapterIndex: number = 0) => {
     setGameStarted(true);
     setShowTransition(true); // Show first chapter title
-    setCurrentChapterIndex(0);
+    setCurrentChapterIndex(chapterIndex);
     setCurrentSceneIndex(0);
   };
 
@@ -50,7 +50,7 @@ export default function App() {
   // Render Logic
   const renderContent = () => {
     if (!gameStarted) {
-      return <StartScene onComplete={handleStartGame} />;
+      return <StartScene onComplete={() => handleStartGame(0)} onChapterSelect={handleStartGame} />;
     }
 
     if (showTransition) {
